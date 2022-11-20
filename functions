@@ -5,6 +5,22 @@ source "$PLUGIN_CORE_AVAILABLE_PATH/common/functions"
 source "$PLUGIN_AVAILABLE_PATH/config/functions"
 source "$PLUGIN_AVAILABLE_PATH/nginx-vhosts/functions"
 
+get_custom_nginx_stream_template() {
+  declare desc="attempts to copy custom nginx stream template from app image"
+  local APP="$1"
+  local DESTINATION_FILE="$2"
+  local IMAGE_TAG="$(get_running_image_tag "$APP")"
+  local IMAGE=$(get_deploying_app_image_name "$APP" "$IMAGE_TAG")
+  local NGINX_TEMPLATE_NAME="stream.conf.sigil"
+  local DISABLE_CUSTOM_CONFIG="$(fn-plugin-property-get-default "nginx" "$APP" "disable-custom-config" "false")"
+
+  if [[ "$DISABLE_CUSTOM_CONFIG" == "true" ]]; then
+    return
+  fi
+
+  copy_from_image "$IMAGE" "$NGINX_TEMPLATE_NAME" "$DESTINATION_FILE" 2>/dev/null || true
+}
+
 nginx_stream_build_config() {
   local APP="$1"
   local STREAM_TEMPLATE_NAME="stream.conf.sigil"
@@ -72,6 +88,14 @@ nginx_stream_build_config() {
 
   local STREAM_BUILD_CONFIG_TMP_WORK_DIR=$(mktemp -d "/tmp/dokku-${DOKKU_PID}-${FUNCNAME[0]}.XXXXXX")
   local STREAM_CONF=$(mktemp --tmpdir="${STREAM_BUILD_CONFIG_TMP_WORK_DIR}" "stream.conf.XXXXXX")
+  local CUSTOM_STREAM_TEMPLATE="$NGINX_BUILD_CONFIG_TMP_WORK_DIR/$STREAM_TEMPLATE_NAME"
+  trap "rm -rf '$STREAM_CONF' '$NGINX_BUILD_CONFIG_TMP_WORK_DIR' >/dev/null" RETURN INT TERM EXIT
+
+  get_custom_nginx_stream_template "$APP" "$CUSTOM_STREAM_TEMPLATE" 2>/dev/null
+  if [[ -f "$CUSTOM_STREAM_TEMPLATE" ]]; then
+    dokku_log_info1 'Overriding default stream.conf with detected stream.conf.sigil'
+    local STREAM_TEMPLATE="$CUSTOM_STREAM_TEMPLATE"
+  fi
 
   local SIGIL_PARAMS=(-f "$STREAM_TEMPLATE" APP="$APP"
     DOKKU_APP_LISTEN_IP="$DOKKU_APP_LISTEN_IP"
