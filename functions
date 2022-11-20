@@ -46,6 +46,8 @@ nginx_stream_build_config() {
     exit 0
   fi
 
+  # setup nginx listen ports
+  plugn trigger proxy-configure-ports "$APP"
   local DOKKU_PROXY_PORT_MAP=$(config_get "$APP" DOKKU_PROXY_PORT_MAP)
 
   local NGINX_LOG_ROOT="$(fn-nginx-log-root)"
