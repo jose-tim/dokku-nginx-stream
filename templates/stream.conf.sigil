@@ -12,6 +12,8 @@ server {
     error_log   {{ $.NGINX_ERROR_LOG_PATH }};
 
     proxy_pass {{$.APP}}-tcp-{{ $upstream_port }};
+    
+    include {{ $.DOKKU_ROOT }}/{{ $.APP }}/nginx-stream.conf.d/*.conf;
 }
 
 {{ end }}
@@ -30,6 +32,8 @@ server {
     error_log   {{ $.NGINX_ERROR_LOG_PATH }};
     
     proxy_pass {{$.APP}}-udp-{{ $upstream_port }};
+    
+    include {{ $.DOKKU_ROOT }}/{{ $.APP }}/nginx-stream.conf.d/*.conf;
 }
 
 {{ end }}
