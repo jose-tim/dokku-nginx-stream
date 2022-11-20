@@ -11,7 +11,16 @@ nginx_stream_build_config() {
   local STREAM_TEMPLATE="$PLUGIN_AVAILABLE_PATH/nginx-stream/templates/$STREAM_TEMPLATE_NAME"
   local SCHEME=tcp
   if [[ "$(plugn trigger proxy-is-enabled "$APP")" != "true" ]]; then
-    dokku_log_fail "Enable proxy for this to work"
+    dokku_log_info1 "Nginx support is disabled for app ($APP)"
+    if [[ -f "$DOKKU_ROOT/$APP/stream.conf" ]]; then
+      dokku_log_info1 "Deleting stream.conf"
+      rm "$DOKKU_ROOT/$APP/stream.conf"
+
+      if (is_deployed "$APP"); then
+        dokku_log_info1 "Reloading nginx after stream.conf deletion"
+        validate_nginx && restart_nginx >/dev/null
+      fi
+    fi
     exit 0
   fi
 
@@ -78,6 +87,6 @@ nginx_stream_build_config() {
   done < <(plugn trigger ps-current-scale "$APP")
 
   sigil "${SIGIL_PARAMS[@]}" | cat -s >"$STREAM_CONF"
-  sudo /bin/mv "$STREAM_CONF" "/etc/nginx/app-stream/$APP.conf"
+  mv "$STREAM_CONF" "$DOKKU_ROOT/$APP/stream.conf"
   validate_nginx && restart_nginx >/dev/null
 }

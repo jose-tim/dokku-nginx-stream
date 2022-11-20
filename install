@@ -4,11 +4,20 @@ set -eo pipefail
 [[ $DOKKU_TRACE ]] && set -x
 
 plugin-install () {
-    local NGINX_STREAM_SUDOERS_FILE="/etc/sudoers.d/dokku-nginx-stream"
-    echo "%dokku ALL=(ALL) NOPASSWD:/bin/mv /tmp/dokku-*-nginx_stream_build_config*/stream.conf* /etc/nginx/app-stream/*" \
-        > "$NGINX_STREAM_SUDOERS_FILE"
-    local NGINX_CONF="/etc/nginx/nginx.conf"
-    mkdir -p "/etc/nginx/app-stream"
+    local NGINX_ROOT="/etc/nginx"
+    
+    mkdir -p "$NGINX_ROOT/app-stream"
+    chown root:root "$NGINX_ROOT/app-stream"
+    
+    local DOKKU_TEMPLATE="$PLUGIN_AVAILABLE_PATH/nginx-stream/templates/dokku.conf.sigil"
+    CUSTOM_DOKKU_TEMPLATE="$(plugn trigger nginx-stream-dokku-template-source)"
+    if [[ -n "$CUSTOM_DOKKU_TEMPLATE" ]] && [[ -f "$CUSTOM_DOKKU_TEMPLATE" ]]; then
+        DOKKU_TEMPLATE="$CUSTOM_DOKKU_TEMPLATE"
+    fi
+
+    sigil -f "$DOKKU_TEMPLATE" DOKKU_ROOT="$DOKKU_ROOT" NGINX_ROOT="$NGINX_ROOT" | cat -s >"$NGINX_ROOT/conf.d/dokku.conf"
+    
+    local NGINX_CONF="$NGINX_ROOT/nginx.conf"
     cat >> $NGINX_CONF << EOF
 stream {
     include /etc/nginx/app-stream/*.conf;
