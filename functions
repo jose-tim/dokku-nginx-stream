@@ -10,6 +10,12 @@ nginx_stream_build_config() {
   local STREAM_TEMPLATE_NAME="stream.conf.sigil"
   local STREAM_TEMPLATE="$PLUGIN_AVAILABLE_PATH/nginx-stream/templates/$STREAM_TEMPLATE_NAME"
   local SCHEME=tcp
+
+  local CUSTOM_STREAM_TEMPLATE="$(plugn trigger nginx-app-stream-template-source "$APP" "app-config")"
+  if [[ -n "$CUSTOM_STREAM_TEMPLATE" ]]; then
+    STREAM_TEMPLATE="$CUSTOM_STREAM_TEMPLATE"
+  fi
+  
   if [[ "$(plugn trigger proxy-is-enabled "$APP")" != "true" ]]; then
     dokku_log_info1 "Nginx support is disabled for app ($APP)"
     if [[ -f "$DOKKU_ROOT/$APP/stream.conf" ]]; then
