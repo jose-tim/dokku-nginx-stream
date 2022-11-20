@@ -27,5 +27,6 @@ help_desc
 fn-help-content() {
   declare desc="return help content"
   cat <<help_content
+    nginx:show-config <app>, Display app nginx stream config
 help_content
 }
