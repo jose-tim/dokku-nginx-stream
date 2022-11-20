@@ -7,6 +7,10 @@
 
 server {
     listen     {{ $listen_port }};
+    
+    access_log  {{ $.NGINX_ACCESS_LOG_PATH }}{{ if and ($.NGINX_ACCESS_LOG_FORMAT) (ne $.NGINX_ACCESS_LOG_PATH "off") }} {{ $.NGINX_ACCESS_LOG_FORMAT }} {{ else }} dokku_stream_basic {{ end }};
+    error_log   {{ $.NGINX_ERROR_LOG_PATH }};
+
     proxy_pass {{$.APP}}-tcp-{{ $upstream_port }};
 }
 
@@ -21,6 +25,10 @@ server {
 
 server {
     listen     {{ $listen_port }} udp;
+    
+    access_log  {{ $.NGINX_ACCESS_LOG_PATH }}{{ if and ($.NGINX_ACCESS_LOG_FORMAT) (ne $.NGINX_ACCESS_LOG_PATH "off") }} {{ $.NGINX_ACCESS_LOG_FORMAT }}{{ else }} dokku_stream_basic {{ end }};
+    error_log   {{ $.NGINX_ERROR_LOG_PATH }};
+    
     proxy_pass {{$.APP}}-udp-{{ $upstream_port }};
 }
 

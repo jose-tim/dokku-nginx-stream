@@ -1,1 +1,5 @@
+log_format dokku_stream_basic '$remote_addr [$time_local] '
+    '$protocol $status $bytes_sent $bytes_received '
+    '$session_time';
+
 include {{ $.DOKKU_ROOT }}/*/stream.conf;

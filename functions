@@ -48,6 +48,11 @@ nginx_stream_build_config() {
 
   local DOKKU_PROXY_PORT_MAP=$(config_get "$APP" DOKKU_PROXY_PORT_MAP)
 
+  local NGINX_LOG_ROOT="$(fn-nginx-log-root)"
+  local NGINX_ACCESS_LOG_FORMAT="$(fn-nginx-access-log-format "$APP")"
+  local NGINX_ACCESS_LOG_PATH="$(fn-nginx-access-log-path "$APP")"
+  local NGINX_ERROR_LOG_PATH="$(fn-nginx-error-log-path "$APP")"
+
   local PORT_MAP TCP_PROXY_PORT_MAP UDP_PROXY_PORT_MAP
   for PORT_MAP in $DOKKU_PROXY_PORT_MAP; do
     local PROXY_SCHEME="$(awk -F ':' '{ print $1 }' <<<"$PORT_MAP")"
@@ -98,6 +103,10 @@ nginx_stream_build_config() {
   fi
 
   local SIGIL_PARAMS=(-f "$STREAM_TEMPLATE" APP="$APP"
+    NGINX_LOG_ROOT="$NGINX_LOG_ROOT"
+    NGINX_ACCESS_LOG_FORMAT="$NGINX_ACCESS_LOG_FORMAT"
+    NGINX_ACCESS_LOG_PATH="$NGINX_ACCESS_LOG_PATH"
+    NGINX_ERROR_LOG_PATH="$NGINX_ERROR_LOG_PATH"
     DOKKU_APP_LISTEN_IP="$DOKKU_APP_LISTEN_IP"
     TCP_PROXY_PORT_MAP="$TCP_PROXY_PORT_MAP"
     TCP_PROXY_UPSTREAM_PORTS="$TCP_PROXY_UPSTREAM_PORTS"
