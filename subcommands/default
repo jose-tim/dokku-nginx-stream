@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+set -eo pipefail
+[[ $DOKKU_TRACE ]] && set -x
+source "$PLUGIN_AVAILABLE_PATH/nginx-stream/help-functions"
+
+cmd-nginx-stream-help "nginx-stream:help"
