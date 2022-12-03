@@ -15,7 +15,7 @@ plugin-install () {
         DOKKU_TEMPLATE="$CUSTOM_DOKKU_TEMPLATE"
     fi
 
-    sigil -f "$DOKKU_TEMPLATE" DOKKU_ROOT="$DOKKU_ROOT" NGINX_ROOT="$NGINX_ROOT" | cat -s >"$NGINX_ROOT/conf.d/dokku.conf"
+    sigil -f "$DOKKU_TEMPLATE" DOKKU_ROOT="$DOKKU_ROOT" NGINX_ROOT="$NGINX_ROOT" | cat -s >"$NGINX_ROOT/app-stream/dokku.conf"
     
     local NGINX_CONF="$NGINX_ROOT/nginx.conf"
     cat >> $NGINX_CONF << EOF
